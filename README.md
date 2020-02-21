@@ -5,7 +5,7 @@ A google group crawler written in go
 This crawler downloads messages in `RFC 822` format that can be imported
 into your email clients (`Mutt`, `Thunderbird`, etc.)
 
-![mutt screenshot](https://raw.githubusercontent.com/geniusgordon/go-google-group-crawler/master/mutt.png)
+![mutt screenshot](mutt.png?raw=true)
 
 > Example of messages downloaded from [vim_use](https://groups.google.com/forum/#!forum/vim_use)
 
