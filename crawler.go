@@ -26,7 +26,7 @@ func MkdirAll(group string) {
 }
 
 func DumpLinksFromUrl(t string, group string, url string, cookies []http.Cookie, output_filename string) (int, int) {
-	r_total, _ := regexp.Compile("<i>.*?([0-9]+).*?([0-9]+).*?([0-9]+).*?</i>")
+	r_total, _ := regexp.Compile("<i>[^<]*?([0-9]+) *- *([0-9]+) of ([0-9]+)[^<]*?</i>")
 	r_url, _ := regexp.Compile("\"(https?://.*?)\"")
 	r_d, _ := regexp.Compile(fmt.Sprintf("/d/%s/%s", t, group))
 
@@ -50,6 +50,7 @@ func DumpLinksFromUrl(t string, group string, url string, cookies []http.Cookie,
 
 		if r_total.MatchString(text) {
 			match := r_total.FindStringSubmatch(text)
+			//log.Output(0, strings.Join(match, " - "))
 			a, _ := strconv.Atoi(match[1])
 			b, _ := strconv.Atoi(match[2])
 			c, _ := strconv.Atoi(match[3])
@@ -83,6 +84,7 @@ func DownloadPageWorker(id int, t string, group string, url string, cookies []ht
 
 func DownloadPages(t string, group string, url string, cookies []http.Cookie, output_prefix string, workers int) {
 	total, count := DumpLinksFromUrl(t, group, url, cookies, output_prefix+".0")
+
 	if total == count {
 		return
 	}
@@ -114,14 +116,14 @@ func AuthRequest(url string, cookies []http.Cookie) (resp *http.Response, err er
 	for _, item := range cookies {
 		req.AddCookie(&item)
 	}
-	fmt.Println(req.Cookies())
+	//fmt.Println(req.Cookies())
 
 	client := &http.Client{}
 	resp, err = client.Do(req)
 	if err != nil {
 		return
 	}
-	fmt.Println("HTTP Response Status:", resp.StatusCode, http.StatusText(resp.StatusCode))
+	//fmt.Println("HTTP Response Status:", resp.StatusCode, http.StatusText(resp.StatusCode))
 
 	return resp, err
 }
