@@ -165,7 +165,6 @@ func DownloadMessages(group string, workers int, cookies []http.Cookie) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer file.Close()
 
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
@@ -173,6 +172,7 @@ func DownloadMessages(group string, workers int, cookies []http.Cookie) {
 			url := strings.Replace(text, "/d/topic/", "/forum/?_escaped_fragment_=topic/", -1)
 			jobs <- url
 		}
+		file.Close()
 	}
 
 	close(jobs)
@@ -194,6 +194,9 @@ func DownloadRawMessage(url string, cookies []http.Cookie, output_filename strin
 	}
 
 	_, err = io.Copy(output_file, resp.Body)
+
+	defer output_file.Close()
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -230,7 +233,6 @@ func DownloadRawMessages(group string, workers int, cookies []http.Cookie) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer file.Close()
 
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
@@ -238,6 +240,7 @@ func DownloadRawMessages(group string, workers int, cookies []http.Cookie) {
 			url := strings.Replace(text, "/d/msg/", "/forum/message/raw?msg=", -1)
 			jobs <- url
 		}
+		file.Close()
 	}
 
 	close(jobs)
@@ -269,6 +272,7 @@ func main() {
 	orgPtr := flag.String("o", "redguava.com.au", "Organization Name")
 	groupPtr := flag.String("g", "", "Group name")
 	workerNumPtr := flag.Int("t", 1, "Threads count")
+	raw := flag.Bool("r", false, "Parse messages and fetch raw only")
 	cookies := ReadCookies()
 
 	flag.Parse()
@@ -277,8 +281,11 @@ func main() {
 		flag.Usage()
 		return
 	}
-	MkdirAll(*groupPtr)
-	DownloadThreads(*orgPtr, *groupPtr, *workerNumPtr, cookies)
-	DownloadMessages(*groupPtr, *workerNumPtr, cookies)
+	if !(*raw) {
+		MkdirAll(*groupPtr)
+		DownloadThreads(*orgPtr, *groupPtr, *workerNumPtr, cookies)
+		DownloadMessages(*groupPtr, *workerNumPtr, cookies)
+	}
+
 	DownloadRawMessages(*groupPtr, *workerNumPtr, cookies)
 }
